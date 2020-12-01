@@ -24,27 +24,28 @@ public class BuildingGenerator
     public void Generate(List<BuildingPlot> plots) //change this into a list of plots???
     {
 
-        float building_height = 30;  //use perlin noise ere
+        float building_height = 30;  //use perlin noise here
 
         foreach(BuildingPlot plot in plots)
         {
 
+            //reset verticies, tris and UV's
             indice_triangles = 0;
             indice_vertices = 0;
             indice_UV = 0;
 
 
-            switch (plot.building_type)
+            switch (plot.building_type) //what type of building is in the plot
             {
                 case Youngs_BuildingType.ROUNDBUILDING:
                 {
-                        RoundBuilding(plot, building_height);
+                        RoundBuilding(plot, building_height); //generate a cylindrical building
                         break;    
                 }
                 case Youngs_BuildingType.BLOCKYBUILDING:
                 {
 
-                        ModernBuilding(plot, building_height);
+                        ModernBuilding(plot, building_height); //generate a blocky building
                         break;
                 }
                 case Youngs_BuildingType.TOWERBUILDING:
@@ -97,17 +98,19 @@ public class BuildingGenerator
 
     void RoundBuilding(BuildingPlot plot, float height)
     {
-        int slices = 36;
-        int slices_skipped = Random.Range(0, 11);
-        int index_skipped = Random.Range(0, slices / 2 - slices_skipped);
+        int slices = 36;//amount of slices that make up the cylinder
+        int slices_skipped = Random.Range(0, 11);   //the amount of slices that will be skippped
+        int index_skipped = Random.Range(0, slices / 2 - slices_skipped);   //the itteration at whichthey will be skipped
 
         vertices = new Vector3[(slices + 1 - slices_skipped * 2) * 4 + 50];
         triangles = new int[(slices - slices_skipped * 2) * 12 + 72];
         uv = new Vector2[(slices + 1 - slices_skipped * 2) * 4 + 50];
 
+        //generation of the cylinder
         Cylinder cylinder = new Cylinder(plot, height, slices, slices_skipped, index_skipped);
         AddVertices(cylinder.GetVertices(), cylinder.GetTriangles(), cylinder.GetUV());
 
+        ////creating the gameobject
         GameObject new_building = new GameObject("round building");
         CreateMesh(new_building, vertices, triangles, uv);
 
@@ -225,11 +228,13 @@ public class BuildingGenerator
 
     void CreateMesh(GameObject obj, Vector3[] vertices, int[] triangles, Vector2[] uv)
     {
+        //adding coponents for rendering the mesh
         obj.AddComponent<MeshFilter>();
         obj.AddComponent<MeshRenderer>();
 
-        Mesh mesh = new Mesh();
+        Mesh mesh = new Mesh(); //a new mesh
 
+        //setting the vertices, tris and UV's of the mesh to the calculated ones
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uv;

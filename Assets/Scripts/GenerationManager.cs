@@ -18,6 +18,7 @@ public class GenerationManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //seed can be changed in the editor
         Random.InitState((int)seed);
         GenerateCity();
     }
@@ -30,15 +31,15 @@ public class GenerationManager : MonoBehaviour
 
         //plot gen
 
-        
+        //set a temporary plot
 
         BuildingPlot temp_plot = new BuildingPlot();
-        temp_plot.InitPlot(new Vector3(0, 0, 0), new Vector2(15, 15), Youngs_BuildingType.ROUNDBUILDING, city.transform);
+        temp_plot.InitPlot(new Vector3(0, 0, 5f), new Vector2(15, 15), Youngs_BuildingType.ROUNDBUILDING, city.transform);
         plots.Add(temp_plot);
 
-       // temp_plot = new BuildingPlot();
-      //  temp_plot.InitPlot(new Vector3(6, 0, 0), new Vector2(5, 5), Youngs_BuildingType.ROUNDBUILDING, city.transform);
-       // plots.Add(temp_plot);
+        temp_plot = new BuildingPlot();
+        temp_plot.InitPlot(new Vector3(15, 0, 0), new Vector2(15, 15), Youngs_BuildingType.BLOCKYBUILDING, city.transform);
+        plots.Add(temp_plot);
 
 
         //building gen
