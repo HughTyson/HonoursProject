@@ -6,11 +6,13 @@ public class GenerationManager : MonoBehaviour
 {
 
     [SerializeField] int seed;
+    [SerializeField] GameObject road_prefab;
     int old_seed;
     //private Vars
 
     GameObject city;
 
+    PMRoadGen PM_road_gen = new PMRoadGen();
     BuildingGenerator building_generator = new BuildingGenerator();
 
     List<BuildingPlot> plots = new List<BuildingPlot>();
@@ -20,7 +22,13 @@ public class GenerationManager : MonoBehaviour
     {
         //seed can be changed in the editor
         Random.InitState((int)seed);
+        PM_road_gen.road_segment = road_prefab;
+
+
         GenerateCity();
+
+
+        
     }
 
     void GenerateCity()
@@ -28,7 +36,7 @@ public class GenerationManager : MonoBehaviour
         city = new GameObject("City");
 
         //road gen
-
+        PM_road_gen.Generate();
         //plot gen
 
         //set a temporary plot
@@ -43,7 +51,7 @@ public class GenerationManager : MonoBehaviour
 
 
         //building gen
-        building_generator.Generate(plots);
+       // building_generator.Generate(plots);
     }
 
     // Update is called once per frame

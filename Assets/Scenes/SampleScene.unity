@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 705507994}
+  m_Sun: {fileID: 0}
   m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
@@ -150,7 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78ead39bab1bf144a9327e7d9a14a144, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 2
+  seed: 6
+  road_prefab: {fileID: 8260864939922566460, guid: 94798cb5e574e4d47a2ca98a904c2ac7,
+    type: 3}
 --- !u!4 &680228415
 Transform:
   m_ObjectHideFlags: 0
@@ -333,10 +335,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.2990408, y: 0, z: 0, w: 0.9542404}
+  m_LocalRotation: {x: 0.4927815, y: -0, z: -0, w: 0.8701531}
   m_LocalPosition: {x: 10, y: 50.91, z: -26.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 34.8, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 59.047005, y: 0, z: 0}
