@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 8260864939922566433}
   - component: {fileID: 8260864939922566434}
   - component: {fileID: 8260864939922566435}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Road Segment Prefab
-  m_TagString: Untagged
+  m_TagString: RoadSegment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -47,6 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawner: 0
+  segment_number: 0
+  parent: {fileID: 0}
+  direction: 0
 --- !u!33 &8260864939922566433
 MeshFilter:
   m_ObjectHideFlags: 0

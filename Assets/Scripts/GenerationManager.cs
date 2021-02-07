@@ -27,7 +27,9 @@ public class GenerationManager : MonoBehaviour
 
         GenerateCity();
 
+        GM_.Instance.config.a = 1;
 
+        Debug.Log(GM_.Instance.config.a);
         
     }
 
