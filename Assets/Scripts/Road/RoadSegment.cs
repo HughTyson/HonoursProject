@@ -2,22 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RoadDirection
-{
-    NORTH,SOUTH,EAST,WEST
-}
-
 
 public class RoadSegment : MonoBehaviour
 {
 
     Transform object_transform;
     BoxCollider collider;
-    public int spawner = 0;
-    public int segment_number = 0;
     public Transform parent;
-
-    public RoadDirection direction;
 
     private void Start()
     {
@@ -25,7 +16,7 @@ public class RoadSegment : MonoBehaviour
         
 
     }
-    public void RoadSegmentInit(Vector3 position, Vector3 scale, float rot,int s, int segment_number_, Transform p)
+    public void RoadSegmentInit(Vector3 position, Vector3 scale, float rot, Transform p)
     {        
         
         object_transform = GetComponent<Transform>();
@@ -35,10 +26,7 @@ public class RoadSegment : MonoBehaviour
         transform.position = position;
         transform.localScale = scale;
 
-        spawner = s;
-        segment_number_ = segment_number;
         parent = p;
-        
 
     }
 

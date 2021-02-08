@@ -57,3 +57,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 434ca2b3c6701cf4c8a4cc40fdfedfa7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  seed: 1
+  city_limits_x: 700
+  city_limits_z: 700
+  road_values:
+    road_segment_obj: {fileID: 8260864939922566460, guid: 94798cb5e574e4d47a2ca98a904c2ac7,
+      type: 3}
+    amount_of_roads: 100
+    max_road_segment_length: 35
+    min_road_segment_length: 15
+    road_segment_width: 3
+    max_intersection_distance: 15
+    intersection_distance_steps_taken: 5

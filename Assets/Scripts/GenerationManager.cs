@@ -5,8 +5,8 @@ using UnityEngine;
 public class GenerationManager : MonoBehaviour
 {
 
-    [SerializeField] int seed;
-    [SerializeField] GameObject road_prefab;
+    int seed;
+
     int old_seed;
     //private Vars
 
@@ -21,15 +21,9 @@ public class GenerationManager : MonoBehaviour
     void Start()
     {
         //seed can be changed in the editor
-        Random.InitState((int)seed);
-        PM_road_gen.road_segment = road_prefab;
-
+        Random.InitState(GM_.Instance.config.seed);
 
         GenerateCity();
-
-        GM_.Instance.config.a = 1;
-
-        Debug.Log(GM_.Instance.config.a);
         
     }
 

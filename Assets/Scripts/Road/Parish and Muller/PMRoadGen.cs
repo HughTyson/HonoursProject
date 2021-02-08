@@ -5,46 +5,64 @@ using UnityEngine;
 public class PMRoadGen : MonoBehaviour
 {
 
-    public GameObject road_segment;
+    GameObject road_segment;
 
-    [SerializeField] int max_itterations = 1000;
-    [SerializeField] int max_roads = 1000;
+    int max_roads = 1000;
+    float max_segment_length = 70;//35;
+    float min_segment_length = 35;//15;
+    float segment_width = 3f;
+    float max_intersection_distance = 15;
+    float intersection_distance_step = 3;
+    bool use_city_limits = false;
 
-
-    [SerializeField] float max_segment_length = 70;//35;
-    [SerializeField] float min_segment_length = 35;//15;
-    
-    [SerializeField] float segment_width = 3f;
-
-    [SerializeField] float max_intersection_distance = 15;
-    [SerializeField] float intersection_distance_step = 3;
-
-
-    
-    int itterations = 0;    
     int[] angle = new int[] { 0, 90, 180, 270 };
     Vector3[] directions = new Vector3[] { new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(-1, 0, 0) };
 
     Queue<GameObject> priority_queue;
     List<GameObject> accepted_segments;
+
+    private void InitValues()
+    {
+        max_roads = GM_.Instance.config.road_values.amount_of_roads;
+        max_segment_length = GM_.Instance.config.road_values.max_road_segment_length;
+        min_segment_length = GM_.Instance.config.road_values.min_road_segment_length;
+        segment_width = GM_.Instance.config.road_values.road_segment_width;
+
+        max_intersection_distance = GM_.Instance.config.road_values.max_intersection_distance;
+        intersection_distance_step = max_intersection_distance/GM_.Instance.config.road_values.intersection_distance_steps_taken;
+
+        road_segment = GM_.Instance.config.road_values.road_segment_obj;
+        use_city_limits = GM_.Instance.config.apply_city_limits;
+    }
+
     public List<GameObject> Generate()
     {
+
+        InitValues();
 
         accepted_segments = new List<GameObject>();
         priority_queue = new Queue<GameObject>();
 
         GameObject obj = Instantiate(road_segment);
-        obj.GetComponent<RoadSegment>().RoadSegmentInit(new Vector3(0, 0, 0), new Vector3(min_segment_length, 0.1f, segment_width), 0, 0, itterations, obj.transform);
+        obj.GetComponent<RoadSegment>().RoadSegmentInit(new Vector3(0, 0, 0), new Vector3(min_segment_length, 0.1f, segment_width), 0, obj.transform);
         priority_queue.Enqueue(obj);
 
 
         //generate roads until max amount of roads have been created or max amount of itterations has passed or there are no segments in the queue
         while (accepted_segments.Count < max_roads)
         {
-            itterations++;
+            GameObject working_obj;
+            RoadSegment segment;
+            if (priority_queue.Count != 0)
+            {
+                working_obj = priority_queue.Dequeue();
+                segment = working_obj.GetComponent<RoadSegment>();
+            }
+            else
+            {
+                break;
+            }
 
-            GameObject working_obj = priority_queue.Dequeue();
-            RoadSegment segment = working_obj.GetComponent<RoadSegment>();
 
             bool accepted = LocalConstraints(working_obj);
 
@@ -77,7 +95,6 @@ public class PMRoadGen : MonoBehaviour
 
         //create intersections
          CreateIntersections();
-        //CreateIntersections();
 
         return accepted_segments;
     }
@@ -93,11 +110,15 @@ public class PMRoadGen : MonoBehaviour
            
             Physics.SyncTransforms();
 
-           // if (Mathf.Abs(accepted_segment.transform.position.x) > 700 || Mathf.Abs(accepted_segment.transform.position.z) > 700)
-            //{
-           //     return false;
-           // }            
-            
+            if(use_city_limits)
+            {
+                if (Mathf.Abs(accepted_segment.transform.position.x) > GM_.Instance.config.city_limits_x || Mathf.Abs(accepted_segment.transform.position.z) > GM_.Instance.config.city_limits_z)
+                {
+                    return false;
+                }
+            }
+
+
             if (working_obj.GetComponent<BoxCollider>().bounds.Intersects(accepted_segment.GetComponent<BoxCollider>().bounds))
             {
                 return false;
@@ -200,7 +221,7 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_forward;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), 1, itterations, segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform());
 
         priority_queue.Enqueue(proposed_road);
     }
@@ -220,7 +241,7 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_forward;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), 2, itterations, segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform());
 
         priority_queue.Enqueue(proposed_road);
     }
@@ -244,7 +265,7 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_up;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)), 3, itterations, segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)), segment.GetTransform());
 
         priority_queue.Enqueue(proposed_road);
     }
@@ -268,7 +289,7 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_up;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)), 4, itterations, segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)),segment.GetTransform());
 
         priority_queue.Enqueue(proposed_road);
     }
