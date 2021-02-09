@@ -42,9 +42,6 @@ public class RoadSegment : MonoBehaviour
 
     private void Update()
     {
-        //Debug.DrawLine(transform.position, transform.position + new Vector3((transform.localScale.x / 2) + (15 / 2), 0,0));
-        Debug.DrawRay(transform.position, new Vector3(1, 0, 0) * ((transform.localScale.x / 2) + (15 / 2)));
-       Debug.DrawRay(transform.position, (new Vector3(-1,0,0)) - new Vector3((transform.localScale.x / 2) + (15 / 2), 0, 0));
     }
 
 }

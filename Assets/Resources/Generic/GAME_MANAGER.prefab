@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 6982413562460493801}
   - component: {fileID: 8769542343366514350}
   - component: {fileID: 1083395317325077722}
+  - component: {fileID: 8838449526067588261}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: GAME_MANAGER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7242777128535713643}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 247.20688, y: -9584.256, z: -4745.9346}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -45,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 1083395317325077722}
+  perlin_noise: {fileID: 8838449526067588261}
 --- !u!114 &1083395317325077722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,6 +60,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 1
+  apply_city_limits: 0
   city_limits_x: 700
   city_limits_z: 700
   road_values:
@@ -69,3 +72,17 @@ MonoBehaviour:
     road_segment_width: 3
     max_intersection_distance: 15
     intersection_distance_steps_taken: 5
+--- !u!114 &8838449526067588261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7242777128535713643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47e1d2aa4eed68c498dbd20cd38f04be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scale: 400
+  floor_value: 0.35

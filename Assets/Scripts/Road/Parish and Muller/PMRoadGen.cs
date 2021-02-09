@@ -143,9 +143,6 @@ public class PMRoadGen : MonoBehaviour
 
         int rot = (int)Mathf.Abs(segment.transform.rotation.eulerAngles.y);
 
-        Debug.Log(rot);
-        //rot = Mathf.Round(rot);
-
         foreach (int i in angle)
         {
 
@@ -196,10 +193,6 @@ public class PMRoadGen : MonoBehaviour
                         }
                 }
             }
-            else
-            {
-                Debug.Log("missed");
-            }
         }
 
 
@@ -214,7 +207,11 @@ public class PMRoadGen : MonoBehaviour
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float random_length_forward = Random.Range(min_segment_length, max_segment_length);
+        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+
+        float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
+
+        //float random_length_forward = Random.Range(min_segment_length, max_segment_length);
 
         pos = segment.transform.position;
         pos.x += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
@@ -234,7 +231,11 @@ public class PMRoadGen : MonoBehaviour
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float random_length_forward = Random.Range(min_segment_length, max_segment_length);
+        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+
+        float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
+
+        //float random_length_forward = Random.Range(min_segment_length, max_segment_length);
 
         pos = segment.transform.position;
         pos.z += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
@@ -255,7 +256,11 @@ public class PMRoadGen : MonoBehaviour
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float random_length_up = Random.Range(min_segment_length, max_segment_length);
+        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
+
+        float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
+
+         //float random_length_up = Random.Range(min_segment_length, max_segment_length);
 
         pos = segment.transform.position;
         pos.z += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
@@ -279,7 +284,11 @@ public class PMRoadGen : MonoBehaviour
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float random_length_up = Random.Range(min_segment_length, max_segment_length);
+        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x, segment.transform.position.z + (lft_rgt * min_segment_length));
+
+        float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
+
+        // float random_length_up = Random.Range(min_segment_length, max_segment_length);
 
         pos = segment.transform.position;
         pos.x += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
@@ -299,14 +308,11 @@ public class PMRoadGen : MonoBehaviour
     {
         int layer_mask = 1 << 8;
         bool x_or_z = false; //false is 0 or 180         true is 90 or 270
-        int v = 0;
+
         foreach (GameObject obj in accepted_segments)
         {
-            v++;
-            if(v == 86)
-            {
-                Debug.Log("Hello");
-            }
+
+
             float rot = Mathf.Abs(obj.transform.rotation.eulerAngles.y);
 
             if(rot < 1)
