@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8260864939922566460
+--- !u!1 &8174420836464075685
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,80 +8,47 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8260864939922566439}
-  - component: {fileID: 8260864939922566432}
-  - component: {fileID: -616989709455456983}
-  - component: {fileID: 8260864939922566433}
-  - component: {fileID: 8260864939922566434}
-  - component: {fileID: 1224028280146725487}
-  m_Layer: 8
-  m_Name: Road Segment Prefab
-  m_TagString: RoadSegment
+  - component: {fileID: 1889977818466929570}
+  - component: {fileID: 945271933255401181}
+  - component: {fileID: 7766178679449554781}
+  - component: {fileID: 6166128364101374506}
+  - component: {fileID: 7926310916732393824}
+  m_Layer: 0
+  m_Name: Intersection
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8260864939922566439
+--- !u!4 &1889977818466929570
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
+  m_GameObject: {fileID: 8174420836464075685}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.15, y: 0, z: -2.87}
-  m_LocalScale: {x: 3, y: 0.1, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 3, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8260864939922566432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7077e5d2627b1334f894e50f44af59ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parent: {fileID: 0}
-  direction: {x: 0, y: 0, z: 0}
-  connected_points_all: []
-  connected_segments_endpoints: []
-  connected_segments_midpoints: []
-  connected_segments_intersection: []
-  road_number: 0
---- !u!114 &-616989709455456983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cdd4bcd41539ed48ab4814049b88ebc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  visisted: 0
---- !u!33 &8260864939922566433
+--- !u!33 &945271933255401181
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
+  m_GameObject: {fileID: 8174420836464075685}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &8260864939922566434
+--- !u!23 &7766178679449554781
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
+  m_GameObject: {fileID: 8174420836464075685}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -114,16 +81,30 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &1224028280146725487
+--- !u!65 &6166128364101374506
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8260864939922566460}
+  m_GameObject: {fileID: 8174420836464075685}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.98, y: 1, z: 0.98}
+  m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7926310916732393824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8174420836464075685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3b519aa82c66ae429d7d3286353863f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent_road: {fileID: 0}
+  direction_of_parent: {x: 0, y: 0, z: 0}

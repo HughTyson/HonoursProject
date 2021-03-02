@@ -22,7 +22,6 @@ public class PerlinNoise : MonoBehaviour
             value -= 0.2f;
             Mathf.Clamp01(value);
 
-            //value = Mathf.Floor(value);
         }
 
         return value;

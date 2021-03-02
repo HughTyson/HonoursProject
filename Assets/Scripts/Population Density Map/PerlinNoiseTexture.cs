@@ -67,10 +67,10 @@ public class PerlinNoiseTexture : MonoBehaviour
 
                 if (sample < 0.6)
                 {
-                    //sample -= 0.2f;
-                    //Mathf.Clamp01(sample);
+                    sample -= 0.2f;
+                    Mathf.Clamp01(sample);
 
-                    sample = Mathf.Floor(sample);
+                    //sample = Mathf.Floor(sample);
                 }
                 pix[(int)y * noiseTex.width + (int)x] = new Color(sample, sample, sample);
                 x++;

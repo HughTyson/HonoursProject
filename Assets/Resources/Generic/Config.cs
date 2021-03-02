@@ -31,6 +31,7 @@ public class RoadValues
 {
 
     public GameObject road_segment_obj;
+    public GameObject intersection_obj;
 
     [Tooltip("The maximum amount of roads that will be spawned")]
     public int amount_of_roads = 100;

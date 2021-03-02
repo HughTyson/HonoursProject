@@ -14,6 +14,7 @@ public class GenerationManager : MonoBehaviour
 
     PMRoadGen PM_road_gen = new PMRoadGen();
     BuildingGenerator building_generator = new BuildingGenerator();
+    BlockGenerator block_generator = new BlockGenerator();
 
     List<BuildingPlot> plots = new List<BuildingPlot>();
 
@@ -33,6 +34,10 @@ public class GenerationManager : MonoBehaviour
 
         //road gen
         PM_road_gen.Generate();
+
+        //city block generation
+        block_generator.Generate(PM_road_gen.GetIntersections(), PM_road_gen.GetRoads());
+
         //plot gen
 
         //set a temporary plot

@@ -2,50 +2,33 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PMRoadGen : MonoBehaviour
+
+
+public class PMRoadGen : GenericRoadGen
 {
-
-    GameObject road_segment;
-
-    int max_roads = 1000;
-    float max_segment_length = 70;//35;
-    float min_segment_length = 35;//15;
-    float segment_width = 3f;
-    float max_intersection_distance = 15;
-    float intersection_distance_step = 3;
-    bool use_city_limits = false;
 
     int[] angle = new int[] { 0, 90, 180, 270 };
     Vector3[] directions = new Vector3[] { new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(-1, 0, 0) };
 
-    Queue<GameObject> priority_queue;
-    List<GameObject> accepted_segments;
-
-    private void InitValues()
-    {
-        max_roads = GM_.Instance.config.road_values.amount_of_roads;
-        max_segment_length = GM_.Instance.config.road_values.max_road_segment_length;
-        min_segment_length = GM_.Instance.config.road_values.min_road_segment_length;
-        segment_width = GM_.Instance.config.road_values.road_segment_width;
-
-        max_intersection_distance = GM_.Instance.config.road_values.max_intersection_distance;
-        intersection_distance_step = max_intersection_distance/GM_.Instance.config.road_values.intersection_distance_steps_taken;
-
-        road_segment = GM_.Instance.config.road_values.road_segment_obj;
-        use_city_limits = GM_.Instance.config.apply_city_limits;
-    }
+    Queue<GameObject> road_segment_queue;
+    Queue<Vector3> intersection_queue;
+    
 
     public List<GameObject> Generate()
     {
 
-        InitValues();
+        InitValues();   //setup vlaues used in road generation
+        InitHandlers(); //initilise managers used in road generation
 
+        //define lists used to store new segments and accepted segments
         accepted_segments = new List<GameObject>();
-        priority_queue = new Queue<GameObject>();
+        road_segment_queue = new Queue<GameObject>();
+        intersection_queue = new Queue<Vector3>();
 
+        //create the initial road segment and add it to the 
         GameObject obj = Instantiate(road_segment);
-        obj.GetComponent<RoadSegment>().RoadSegmentInit(new Vector3(0, 0, 0), new Vector3(min_segment_length, 0.1f, segment_width), 0, obj.transform);
-        priority_queue.Enqueue(obj);
+        obj.GetComponent<RoadSegment>().RoadSegmentInit(new Vector3(0, 0, 0), new Vector3(min_segment_length, 0.1f, segment_width), 0, obj.transform, new Vector3(1,0,0), obj);
+        road_segment_queue.Enqueue(obj); intersection_queue.Enqueue(Vector3.positiveInfinity);
 
 
         //generate roads until max amount of roads have been created or max amount of itterations has passed or there are no segments in the queue
@@ -53,9 +36,11 @@ public class PMRoadGen : MonoBehaviour
         {
             GameObject working_obj;
             RoadSegment segment;
-            if (priority_queue.Count != 0)
+
+            //take an object form the queue
+            if (road_segment_queue.Count != 0)
             {
-                working_obj = priority_queue.Dequeue();
+                working_obj = road_segment_queue.Dequeue();
                 segment = working_obj.GetComponent<RoadSegment>();
             }
             else
@@ -63,38 +48,48 @@ public class PMRoadGen : MonoBehaviour
                 break;
             }
 
-
+            //check if this object passes all local contraints
             bool accepted = LocalConstraints(working_obj);
 
-            if (accepted)
+            if (accepted) //if it passes the constraints then addd it to the list of accepted segments, if not then immeditely delte the object
             {
-                accepted_segments.Add(working_obj);
 
+                working_obj.GetComponent<RoadSegment>().RoadNum(accepted_segments.Count);
+                accepted_segments.Add(working_obj);
                 GlobalConstraints(segment);
+
+                Vector3 intersection_pos = intersection_queue.Dequeue();
+
+                if(!float.IsInfinity(intersection_pos.x))
+                    intersection_handler.CreateIntersection(intersection_pos, working_obj, true);
+                
             }
             else
             {
+                intersection_queue.Dequeue();
                 DestroyImmediate(working_obj);
             }
         }
 
-        foreach (GameObject i in priority_queue) //delete all roads that were not accepted
+        foreach (GameObject i in road_segment_queue) //delete all roads that were not accepted
         {
 
             DestroyImmediate(i);
 
         }
 
-        priority_queue.Clear();
+        road_segment_queue.Clear();
 
         //make sure all collision boxes encompas full shape
         for (int i = 0; i < accepted_segments.Count; i++)
         {
             accepted_segments[i].GetComponent<RoadSegment>().ReScaleCollisionBox();
+            accepted_segments[i].GetComponent<RoadSegment>().CleanUpConnection();
         }
 
         //create intersections
-         CreateIntersections();
+        CreateIntersections();
+
 
         return accepted_segments;
     }
@@ -105,12 +100,12 @@ public class PMRoadGen : MonoBehaviour
     {
         RoadSegment working_segment = working_obj.GetComponent<RoadSegment>();
 
-        foreach (GameObject accepted_segment in accepted_segments)
+        foreach (GameObject accepted_segment in accepted_segments) //check againts every road segments that have already been created
         {
            
             Physics.SyncTransforms();
 
-            if(use_city_limits)
+            if(use_city_limits) //check if it is within a user defined boundry
             {
                 if (Mathf.Abs(accepted_segment.transform.position.x) > GM_.Instance.config.city_limits_x || Mathf.Abs(accepted_segment.transform.position.z) > GM_.Instance.config.city_limits_z)
                 {
@@ -118,12 +113,12 @@ public class PMRoadGen : MonoBehaviour
                 }
             }
 
-
+            //make sure this new road doesn't intersect iwth other roads
             if (working_obj.GetComponent<BoxCollider>().bounds.Intersects(accepted_segment.GetComponent<BoxCollider>().bounds))
             {
                 return false;
             }
-            
+             //ensure these roads arnt too close ot other roads
             if(RoadTooClose(working_segment,accepted_segment))
             {
                 return false;
@@ -143,6 +138,7 @@ public class PMRoadGen : MonoBehaviour
 
         int rot = (int)Mathf.Abs(segment.transform.rotation.eulerAngles.y);
 
+        //spawn 4 new roads off this segment
         foreach (int i in angle)
         {
 
@@ -153,36 +149,38 @@ public class PMRoadGen : MonoBehaviour
                     case 0:
                         {
                             CreateFwdBckXAxis(1, segment);
-                            CreateFwdBckXAxis(-1, segment);
-
                             CreateLftRgtZAxis(1, segment);
+                            CreateFwdBckXAxis(-1, segment);
                             CreateLftRgtZAxis(-1, segment);
                             break;
                         }
                     case 90:
                         {
                             CreateFwdBckZAxis(1, segment);
-                            CreateFwdBckZAxis(-1, segment);
+                            
 
                             CreateLftRgtXAxis(1, segment);
+                            CreateFwdBckZAxis(-1, segment);
                             CreateLftRgtXAxis(-1, segment);
                             break;
                         }
                     case 180:
                         {
                             CreateFwdBckXAxis(1, segment);
-                            CreateFwdBckXAxis(-1, segment);
+                            
 
                             CreateLftRgtZAxis(1, segment);
+                            CreateFwdBckXAxis(-1, segment);
                             CreateLftRgtZAxis(-1, segment);
                             break;
                         }
                     case 270:
                         {
                             CreateFwdBckZAxis(1, segment);
-                            CreateFwdBckZAxis(-1, segment);
+                            
 
                             CreateLftRgtXAxis(1, segment);
+                            CreateFwdBckZAxis(-1, segment);
                             CreateLftRgtXAxis(-1, segment);
                             break;
                         }
@@ -211,16 +209,22 @@ public class PMRoadGen : MonoBehaviour
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
-        //float random_length_forward = Random.Range(min_segment_length, max_segment_length);
-
         pos = segment.transform.position;
         pos.x += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
         scale = segment.transform.localScale;
         scale.x = random_length_forward;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform());
 
-        priority_queue.Enqueue(proposed_road);
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform(), new Vector3(fwd_bck, 0, 0), proposed_road);
+        proposed_road.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(segment.GetObj());
+
+        segment.AddConnectedSegmentEndPoint(proposed_road);
+        segment.AddChildNode(proposed_road);
+
+
+        intersection_queue.Enqueue(Vector3.positiveInfinity);
+
+        road_segment_queue.Enqueue(proposed_road);
     }
 
     void CreateFwdBckZAxis(int fwd_bck, RoadSegment segment)
@@ -235,16 +239,20 @@ public class PMRoadGen : MonoBehaviour
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
-        //float random_length_forward = Random.Range(min_segment_length, max_segment_length);
 
         pos = segment.transform.position;
         pos.z += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
         scale = segment.transform.localScale;
         scale.x = random_length_forward;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y), segment.GetTransform(), new Vector3(0,0,fwd_bck), proposed_road);
+        proposed_road.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(segment.GetObj());
+        segment.AddConnectedSegmentEndPoint(proposed_road);
+        segment.AddChildNode(proposed_road);
 
-        priority_queue.Enqueue(proposed_road);
+        intersection_queue.Enqueue(Vector3.positiveInfinity);
+
+        road_segment_queue.Enqueue(proposed_road);
     }
 
     void CreateLftRgtZAxis(int lft_rgt, RoadSegment segment)
@@ -260,8 +268,6 @@ public class PMRoadGen : MonoBehaviour
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
-         //float random_length_up = Random.Range(min_segment_length, max_segment_length);
-
         pos = segment.transform.position;
         pos.z += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
 
@@ -270,9 +276,14 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_up;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)), segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)), segment.GetTransform(), new Vector3(0,0,lft_rgt), proposed_road);
+        proposed_road.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(segment.GetObj());
+        segment.AddConnectedSegmentMidPoints(proposed_road);
+        segment.AddChildNode(proposed_road);
 
-        priority_queue.Enqueue(proposed_road);
+        intersection_queue.Enqueue(new Vector3(pos.x, 0, segment.transform.position.z));
+
+        road_segment_queue.Enqueue(proposed_road);
     }
 
     void CreateLftRgtXAxis(int lft_rgt, RoadSegment segment)
@@ -288,8 +299,6 @@ public class PMRoadGen : MonoBehaviour
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
-        // float random_length_up = Random.Range(min_segment_length, max_segment_length);
-
         pos = segment.transform.position;
         pos.x += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
 
@@ -298,9 +307,14 @@ public class PMRoadGen : MonoBehaviour
         scale = segment.transform.localScale;
         scale.x = random_length_up;
         scale.z = segment_width;
-        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)),segment.GetTransform());
+        proposed_road.GetComponent<RoadSegment>().RoadSegmentInit(pos, scale, Mathf.Round(segment.transform.rotation.eulerAngles.y + (90)),segment.GetTransform() ,new Vector3(lft_rgt, 0, 0), proposed_road);
+        proposed_road.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(segment.GetObj());
+        segment.AddConnectedSegmentMidPoints(proposed_road);
+        segment.AddChildNode(proposed_road);
 
-        priority_queue.Enqueue(proposed_road);
+        intersection_queue.Enqueue(new Vector3(segment.transform.position.x, 0, pos.z));
+
+        road_segment_queue.Enqueue(proposed_road);
     }
 
     
@@ -311,7 +325,6 @@ public class PMRoadGen : MonoBehaviour
 
         foreach (GameObject obj in accepted_segments)
         {
-
 
             float rot = Mathf.Abs(obj.transform.rotation.eulerAngles.y);
 
@@ -365,11 +378,27 @@ public class PMRoadGen : MonoBehaviour
                             break;
                         }
 
-                        //CalcDistance(obj.transform, hit.collider.gameObject.transform, x_or_z, dir);
+                        //if(RoadTooClose(obj.GetComponent<RoadSegment>(), hit.collider.gameObject))
+                        //{
+                        //    break;
+                        //}
+
+                        
                         obj.transform.localScale += new Vector3(CalcDistance(obj.transform, hit.collider.gameObject.transform, x_or_z, dir), 0, 0);
                         obj.transform.position += (dir * (CalcDistance(obj.transform, hit.collider.gameObject.transform, x_or_z, dir)));
 
+                        obj.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(hit.collider.gameObject);
+                        hit.collider.gameObject.GetComponent<RoadSegment>().AddConnectedIntersection(obj);
 
+
+                        if (x_or_z)
+                        {
+                            intersection_handler.CreateIntersection(new Vector3(obj.transform.position.x, 0,hit.collider.gameObject.transform.position.z), obj, false);
+                        }
+                        else
+                        {
+                            intersection_handler.CreateIntersection(new Vector3(hit.collider.gameObject.transform.position.x, 0, obj.transform.position.z), obj, false);
+                        }
                         break;
                     }
 
@@ -525,7 +554,7 @@ public class PMRoadGen : MonoBehaviour
                 {
                     if (working_segment.parent != accepeted_segment.transform)
                     {
-                        if(accepeted_segment.GetComponent<RoadSegment>().parent != working_segment.transform && accepeted_segment.GetComponent<RoadSegment>().parent != accepeted_segment.transform)
+                        if(accepeted_segment.GetComponent<RoadSegment>().parent != working_segment.transform && accepeted_segment.GetComponent<RoadSegment>().parent != accepeted_segment.transform && accepeted_segment.GetComponent<RoadSegment>().parent != working_segment.parent)
                             return true;
                     }
 
