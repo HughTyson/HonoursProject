@@ -10,15 +10,17 @@ public class BuildingPlot
     [HideInInspector] public Vector2 plot_dimensions;
     [HideInInspector] public Youngs_BuildingType building_type;
     [HideInInspector] public Transform city_transform;
+    [HideInInspector] public bool empty;
 
     //have this contain info like maybe type of building, voneit is in e.g residential, business, 
 
-    public void InitPlot(Vector3 centre, Vector2 dimensions, Youngs_BuildingType type, Transform transform)
+    public void InitPlot(Vector3 centre, Vector2 dimensions, Youngs_BuildingType type, Transform transform, bool empty_)
     {
         plot_centre = centre;
         plot_dimensions = dimensions;
         building_type = type;
         city_transform = transform;
+        empty = empty_;
     }
 
 }

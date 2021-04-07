@@ -11,7 +11,6 @@ public class PMRoadGen : GenericRoadGen
     Vector3[] directions = new Vector3[] { new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(1, 0, 0), new Vector3(-1, 0, 0) };
 
     Queue<GameObject> road_segment_queue;
-    Queue<Vector3> intersection_queue;
     
 
     public List<GameObject> Generate()
@@ -23,13 +22,13 @@ public class PMRoadGen : GenericRoadGen
         //define lists used to store new segments and accepted segments
         accepted_segments = new List<GameObject>();
         road_segment_queue = new Queue<GameObject>();
-        intersection_queue = new Queue<Vector3>();
+      
 
         //create the initial road segment and add it to the 
         GameObject obj = Instantiate(road_segment);
         obj.GetComponent<RoadSegment>().RoadSegmentInit(new Vector3(0, 0, 0), new Vector3(min_segment_length, 0.1f, segment_width), 0, obj.transform, new Vector3(1,0,0), obj);
-        road_segment_queue.Enqueue(obj); intersection_queue.Enqueue(Vector3.positiveInfinity);
 
+        road_segment_queue.Enqueue(obj); //queue the first object
 
         //generate roads until max amount of roads have been created or max amount of itterations has passed or there are no segments in the queue
         while (accepted_segments.Count < max_roads)
@@ -58,24 +57,17 @@ public class PMRoadGen : GenericRoadGen
                 accepted_segments.Add(working_obj);
                 GlobalConstraints(segment);
 
-                Vector3 intersection_pos = intersection_queue.Dequeue();
-
-                if(!float.IsInfinity(intersection_pos.x))
-                    intersection_handler.CreateIntersection(intersection_pos, working_obj, true);
                 
             }
             else
             {
-                intersection_queue.Dequeue();
-                DestroyImmediate(working_obj);
+                DestroyImmediate(working_obj);  //object is not part of the system so destory immediatley
             }
         }
 
         foreach (GameObject i in road_segment_queue) //delete all roads that were not accepted
         {
-
             DestroyImmediate(i);
-
         }
 
         road_segment_queue.Clear();
@@ -205,7 +197,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -221,9 +213,6 @@ public class PMRoadGen : GenericRoadGen
         segment.AddConnectedSegmentEndPoint(proposed_road);
         segment.AddChildNode(proposed_road);
 
-
-        intersection_queue.Enqueue(Vector3.positiveInfinity);
-
         road_segment_queue.Enqueue(proposed_road);
     }
 
@@ -235,7 +224,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -250,7 +239,6 @@ public class PMRoadGen : GenericRoadGen
         segment.AddConnectedSegmentEndPoint(proposed_road);
         segment.AddChildNode(proposed_road);
 
-        intersection_queue.Enqueue(Vector3.positiveInfinity);
 
         road_segment_queue.Enqueue(proposed_road);
     }
@@ -264,7 +252,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
+        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -281,7 +269,6 @@ public class PMRoadGen : GenericRoadGen
         segment.AddConnectedSegmentMidPoints(proposed_road);
         segment.AddChildNode(proposed_road);
 
-        intersection_queue.Enqueue(new Vector3(pos.x, 0, segment.transform.position.z));
 
         road_segment_queue.Enqueue(proposed_road);
     }
@@ -295,7 +282,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPoint(segment.transform.position.x, segment.transform.position.z + (lft_rgt * min_segment_length));
+        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x, segment.transform.position.z + (lft_rgt * min_segment_length));
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -312,7 +299,6 @@ public class PMRoadGen : GenericRoadGen
         segment.AddConnectedSegmentMidPoints(proposed_road);
         segment.AddChildNode(proposed_road);
 
-        intersection_queue.Enqueue(new Vector3(segment.transform.position.x, 0, pos.z));
 
         road_segment_queue.Enqueue(proposed_road);
     }
@@ -390,15 +376,6 @@ public class PMRoadGen : GenericRoadGen
                         obj.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(hit.collider.gameObject);
                         hit.collider.gameObject.GetComponent<RoadSegment>().AddConnectedIntersection(obj);
 
-
-                        if (x_or_z)
-                        {
-                            intersection_handler.CreateIntersection(new Vector3(obj.transform.position.x, 0,hit.collider.gameObject.transform.position.z), obj, false);
-                        }
-                        else
-                        {
-                            intersection_handler.CreateIntersection(new Vector3(hit.collider.gameObject.transform.position.x, 0, obj.transform.position.z), obj, false);
-                        }
                         break;
                     }
 

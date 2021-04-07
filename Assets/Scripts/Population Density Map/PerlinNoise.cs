@@ -10,7 +10,7 @@ public class PerlinNoise : MonoBehaviour
     [SerializeField] float floor_value = 0.6f;
 
 
-    public float GetPoint(float pos_x, float pos_z)
+    public float GetPointCutOff(float pos_x, float pos_z)
     {
         float x_coord = GM_.Instance.config.seed + (pos_x * scale);
         float y_coord = GM_.Instance.config.seed + (pos_z * scale);
@@ -23,6 +23,16 @@ public class PerlinNoise : MonoBehaviour
             Mathf.Clamp01(value);
 
         }
+
+        return value;
+    }
+
+    public float GetPoint(float pos_x, float pos_z)
+    {
+        float x_coord = GM_.Instance.config.seed + (pos_x * scale);
+        float y_coord = GM_.Instance.config.seed + (pos_z * scale);
+
+        float value = Mathf.PerlinNoise(x_coord, y_coord);
 
         return value;
     }

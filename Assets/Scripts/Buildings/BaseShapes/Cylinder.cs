@@ -19,7 +19,7 @@ public class Cylinder
         vertices = new Vector3[number_vertices];
         triangles = new int[number_triangles];
         uv = new Vector2[number_vertices];
-
+        
         float x;
         float y;
         float radius_x = plot.plot_dimensions.x / 2;
@@ -37,16 +37,14 @@ public class Cylinder
 
             if (i == index_of_skipped || i == slices - index_of_skipped - slices_skipped) i += slices_skipped;
             
-                vertices[j] = new Vector3(x + plot.plot_centre.x / 2, 0, y + plot.plot_centre.z / 2);
-                vertices[j + ((slices + 1 - slices_skipped * 2)) * 2] = new Vector3(x + plot.plot_centre.x / 2, height, y + plot.plot_centre.z / 2);
+                vertices[j] = new Vector3(x + 0 / 2, 0, y + 0 / 2);
+                vertices[j + ((slices + 1 - slices_skipped * 2)) * 2] = new Vector3(x + 0 / 2, height, y + 0 / 2);
                 vertices[j + 1] = vertices[j];
-                vertices[j + 1 + ((slices + 1 - slices_skipped * 2)) * 2] = new Vector3(x + plot.plot_centre.x / 2, height, y + plot.plot_centre.z / 2);
-            
-
+                vertices[j + 1 + ((slices + 1 - slices_skipped * 2)) * 2] = new Vector3(x + 0 / 2, height, y + 0 / 2);
         }
 
-        vertices[number_vertices - 2] = new Vector3(plot.plot_centre.x / 2, 0, plot.plot_centre.z / 2);
-        vertices[number_vertices - 1] = new Vector3(plot.plot_centre.x / 2, height, plot.plot_centre.z / 2);
+        vertices[number_vertices - 2] = new Vector3(0 / 2, 0, 0 / 2);
+        vertices[number_vertices - 1] = new Vector3(0 / 2, height, 0 / 2);
         uv[number_vertices - 2] = new Vector2(0, 0);
         uv[number_vertices - 1] = new Vector2(1, 1);
 

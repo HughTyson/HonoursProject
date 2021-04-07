@@ -5,6 +5,8 @@ using UnityEngine;
 public class Config : MonoBehaviour
 {
 
+    public GameObject city_transform;
+
     public int seed = 1;
 
     public bool apply_city_limits = false;
@@ -12,6 +14,7 @@ public class Config : MonoBehaviour
     public float city_limits_z = 700;
 
     public RoadValues road_values;
+    public BuildingPlotValues building_plot_values;
 
     // Start is called before the first frame update
     void Start()
@@ -47,6 +50,25 @@ public class RoadValues
     [Tooltip("The amount of steps that will be taken in order to reach the maximum distance e.g if max distance is 15 and steps is 5, the distance checked infront will incremement by 3 each step")]
     public float intersection_distance_steps_taken = 5f;
 
-    
+}
+
+[System.Serializable]
+public class BuildingPlotValues
+{
+
+    [Tooltip("Minimum Area a Plot can be")]
+    public float minimum_area = 5;
+
+    [Tooltip("The minimum height a building can be")]
+    public float minimum_height = 25;
+    [Tooltip("The maximum height a building can be")]
+    public float maximum_height = 50;
+
+    [Tooltip("Minumum Building Dimension")]
+    public float minimum_building_dimension = 25;
+
 
 }
+
+
+

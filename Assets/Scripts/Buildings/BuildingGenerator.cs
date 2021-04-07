@@ -24,47 +24,89 @@ public class BuildingGenerator
     public void Generate(List<BuildingPlot> plots) //change this into a list of plots???
     {
 
-        float building_height = 30;  //use perlin noise here
-
+        float height_limits = GM_.Instance.config.building_plot_values.maximum_height - GM_.Instance.config.building_plot_values.minimum_height;
+        
+        
         foreach(BuildingPlot plot in plots)
         {
 
-            //reset verticies, tris and UV's
-            indice_triangles = 0;
-            indice_vertices = 0;
-            indice_UV = 0;
-
-
-            switch (plot.building_type) //what type of building is in the plot
+            if(!plot.empty) //the plot has a building
             {
-                case Youngs_BuildingType.ROUNDBUILDING:
-                {
-                        RoundBuilding(plot, building_height); //generate a cylindrical building
-                        break;    
-                }
-                case Youngs_BuildingType.BLOCKYBUILDING:
-                {
+                float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.perlin_noise.GetPoint(plot.plot_centre.x, plot.plot_centre.y));  //useing perlin noise to decide heights of buildings
 
-                        ModernBuilding(plot, building_height); //generate a blocky building
+                //reset verticies, tris and UV's
+                indice_triangles = 0;
+                indice_vertices = 0;
+                indice_UV = 0;
+
+
+                switch (plot.building_type) //what type of building is in the plot
+                {
+                    case Youngs_BuildingType.ROUNDBUILDING:
+                    {
+                            RoundBuilding(plot, building_height); //generate a cylindrical building
+                            break;    
+                    }
+                    case Youngs_BuildingType.BLOCKYBUILDING:
+                    {
+
+                            ModernBuilding(plot, building_height); //generate a blocky building
+                            break;
+                    }
+                    case Youngs_BuildingType.TOWERBUILDING:
+                    {
+                            TowerBuilding(plot, building_height);
                         break;
-                }
-                case Youngs_BuildingType.TOWERBUILDING:
-                {
-                        TowerBuilding(plot, building_height);
-                    break;
-                }
+                    }
 
+                }
             }
-
-            
         }
 
     }
 
+    public void Generate(BuildingPlot plots) //change this into a list of plots???
+    {
 
+        float height_limits = GM_.Instance.config.building_plot_values.maximum_height - GM_.Instance.config.building_plot_values.minimum_height;
+
+
+            float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.perlin_noise.GetPoint(plots.plot_centre.x, plots.plot_centre.y));  //useing perlin noise to decide heights of buildings
+
+        //reset verticies, tris and UV's
+        indice_triangles = 0;
+        indice_vertices = 0;
+        indice_UV = 0;
+
+
+        switch (plots.building_type) //what type of building is in the plot
+        {
+            case Youngs_BuildingType.ROUNDBUILDING:
+                {
+                    RoundBuilding(plots, building_height); //generate a cylindrical building
+                    break;
+                }
+            case Youngs_BuildingType.BLOCKYBUILDING:
+                {
+
+                    ModernBuilding(plots, building_height); //generate a blocky building
+                    break;
+                }
+            case Youngs_BuildingType.TOWERBUILDING:
+                {
+                    TowerBuilding(plots, building_height);
+                    break;
+                }
+
+        }
+
+
+    }
     void TowerBuilding(BuildingPlot plot, float maximum_height)
     {
         int tiers = Random.Range(3, 5);
+
+        Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
 
         vertices = new Vector3[24 * tiers + 12];
         triangles = new int[36 * tiers + 12];
@@ -90,14 +132,17 @@ public class BuildingGenerator
         }
 
         GameObject new_building = new GameObject("tower building");
-        CreateMesh(new_building, vertices, triangles, uv);
+        CreateMesh(new_building, vertices, triangles, uv, colour);
 
         new_building.transform.parent = plot.city_transform;
-        new_building.transform.localPosition = plot.plot_centre;
+        new_building.transform.position = plot.plot_centre;
     }
 
     void RoundBuilding(BuildingPlot plot, float height)
     {
+
+        Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
+
         int slices = 36;//amount of slices that make up the cylinder
         int slices_skipped = Random.Range(0, 11);   //the amount of slices that will be skippped
         int index_skipped = Random.Range(0, slices / 2 - slices_skipped);   //the itteration at whichthey will be skipped
@@ -112,14 +157,16 @@ public class BuildingGenerator
 
         ////creating the gameobject
         GameObject new_building = new GameObject("round building");
-        CreateMesh(new_building, vertices, triangles, uv);
+        CreateMesh(new_building, vertices, triangles, uv, colour);
 
         new_building.transform.parent = plot.city_transform;
-        new_building.transform.localPosition = plot.plot_centre;
+        new_building.transform.position = plot.plot_centre;
     }
 
     void ModernBuilding(BuildingPlot plot, float maximum_height)
     {
+
+        Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
 
         //init variables 
         float minHeight;
@@ -188,10 +235,12 @@ public class BuildingGenerator
             }
 
             block = new Block(lb, rt, window_size);
-            AddVertices(block.GetVertices(), block.GetTriangles(), block.GetUV());
+            //AddVertices(block.GetVertices(), block.GetTriangles(), block.GetUV());
 
             GameObject building_block = new GameObject("modern building");
-            //CreateMesh(building_block, block.GetVertices(), block.GetTriangles(), block.GetUV());
+            building_block.AddComponent<MeshCollider>();
+            
+            CreateMesh(building_block, block.GetVertices(), block.GetTriangles(), block.GetUV(), colour);
 
             building_block.transform.parent = new_building.transform;
 
@@ -200,10 +249,12 @@ public class BuildingGenerator
 
         //create the shape
 
-        CreateMesh(new_building, vertices, triangles, uv);
+        CreateMesh(new_building, vertices, triangles, uv, colour);
+
+
 
         new_building.transform.parent = plot.city_transform;
-        new_building.transform.localPosition = plot.plot_centre;
+        new_building.transform.localPosition = plot.plot_centre - new Vector3(plot.plot_dimensions.x/2, 0, plot.plot_dimensions.y/ 2);
 
     }
 
@@ -226,11 +277,12 @@ public class BuildingGenerator
         }
     }
 
-    void CreateMesh(GameObject obj, Vector3[] vertices, int[] triangles, Vector2[] uv)
+    void CreateMesh(GameObject obj, Vector3[] vertices, int[] triangles, Vector2[] uv, Color base_colour)
     {
         //adding coponents for rendering the mesh
         obj.AddComponent<MeshFilter>();
         obj.AddComponent<MeshRenderer>();
+        obj.AddComponent<MeshCollider>();
 
         Mesh mesh = new Mesh(); //a new mesh
 
@@ -241,10 +293,13 @@ public class BuildingGenerator
 
         obj.GetComponent<MeshFilter>().mesh = mesh;
 
-        Material new_mat = Resources.Load("Red Mat", typeof(Material)) as Material;
-        obj.GetComponent<MeshRenderer>().material = new_mat;
+
+        obj.GetComponent<MeshRenderer>().material.color = base_colour;
 
         obj.GetComponent<MeshFilter>().mesh.RecalculateNormals();
+        obj.GetComponent<MeshCollider>().sharedMesh = mesh;
+
+        obj.layer = 8;
     }
 
 }

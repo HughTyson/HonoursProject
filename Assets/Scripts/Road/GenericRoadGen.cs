@@ -8,7 +8,7 @@ public class GenericRoadGen : MonoBehaviour
     protected GameObject road_segment;
 
     protected List<GameObject> accepted_segments;
-    protected IntersectionHandler intersection_handler;
+ 
 
     protected int max_roads = 1000;
     protected float max_segment_length = 70;
@@ -21,7 +21,7 @@ public class GenericRoadGen : MonoBehaviour
     
     protected void InitHandlers()
     {
-        intersection_handler = new IntersectionHandler();
+        
     }
 
     protected void InitValues()
@@ -43,8 +43,4 @@ public class GenericRoadGen : MonoBehaviour
         return accepted_segments;
     }
 
-    public List<Intersection> GetIntersections()
-    {
-        return intersection_handler.GetIntersections();
-    }
 }

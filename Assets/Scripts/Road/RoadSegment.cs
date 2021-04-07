@@ -6,6 +6,8 @@ using UnityEngine;
 public struct DFSSearch
 {
     public bool visited;
+    public float angle;
+    public float orientation;
 }
 public class RoadSegment : MonoBehaviour
 {
@@ -157,10 +159,10 @@ public class RoadSegment : MonoBehaviour
 
         
 
-        foreach(GameObject obj in connected_points_all)
-        {
-            Debug.DrawLine(transform.position, obj.transform.position, Color.red);
-        }
+        //foreach(GameObject obj in connected_points_all)
+        //{
+        //    Debug.DrawLine(transform.position, obj.transform.position, Color.red);
+        //}
 
     }
 
