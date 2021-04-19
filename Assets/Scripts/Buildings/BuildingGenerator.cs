@@ -26,13 +26,14 @@ public class BuildingGenerator
 
         float height_limits = GM_.Instance.config.building_plot_values.maximum_height - GM_.Instance.config.building_plot_values.minimum_height;
         
-        
         foreach(BuildingPlot plot in plots)
         {
 
             if(!plot.empty) //the plot has a building
             {
-                float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.perlin_noise.GetPoint(plot.plot_centre.x, plot.plot_centre.y));  //useing perlin noise to decide heights of buildings
+                //float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.perlin_noise.GetPoint(plot.plot_centre.x, plot.plot_centre.z));  //useing perlin noise to decide heights of buildings
+
+                float building_height = GM_.Instance.procedural.GetPointCircle(plot.plot_centre.x, plot.plot_centre.z);
 
                 //reset verticies, tris and UV's
                 indice_triangles = 0;
@@ -71,7 +72,7 @@ public class BuildingGenerator
         float height_limits = GM_.Instance.config.building_plot_values.maximum_height - GM_.Instance.config.building_plot_values.minimum_height;
 
 
-            float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.perlin_noise.GetPoint(plots.plot_centre.x, plots.plot_centre.y));  //useing perlin noise to decide heights of buildings
+            float building_height = GM_.Instance.config.building_plot_values.minimum_height + (height_limits * GM_.Instance.procedural.GetPoint(plots.plot_centre.x, plots.plot_centre.y));  //useing perlin noise to decide heights of buildings
 
         //reset verticies, tris and UV's
         indice_triangles = 0;
@@ -104,7 +105,7 @@ public class BuildingGenerator
     }
     void TowerBuilding(BuildingPlot plot, float maximum_height)
     {
-        int tiers = Random.Range(3, 5);
+        int tiers = Random.Range(3, 6);
 
         Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
 
@@ -112,30 +113,55 @@ public class BuildingGenerator
         triangles = new int[36 * tiers + 12];
         uv = new Vector2[24 * tiers + 12];
 
-        float height = Random.Range(0.6f * maximum_height, maximum_height);
-        float peakHeight = Random.Range(0.25f, 0.25f * height);
-        height -= peakHeight;
-        height /= 2;
+        float random_distribution = Random.Range(0.5f, 0.8f);
 
-        Vector3 lb = new Vector3(plot.plot_centre.x, 0, plot.plot_centre.y);
-        Vector3 rt = new Vector3(plot.plot_dimensions.x + 0.1f, 0, plot.plot_dimensions.y + 0.1f);
+        float height = Random.Range(random_distribution * maximum_height, maximum_height);
+        float difference = height - random_distribution * maximum_height;
 
-        Block block;
+        float last_height = random_distribution * maximum_height;
 
-        for (int i = 0; i < tiers; i++)
-        {
-            lb = new Vector3(lb.x + 0.1f, rt.y, lb.z + 0.1f);
-            rt = new Vector3(rt.x - 0.1f, rt.y + height, rt.z - 0.1f);
-            block = new Block(lb, rt, window_size);
-            AddVertices(block.GetVertices(), block.GetTriangles(), block.GetUV());
-            height /= 2;
-        }
+
+        Vector3 lb = new Vector3(0, 0, 0);
+        Vector3 rt = new Vector3(plot.plot_dimensions.x , last_height, plot.plot_dimensions.y );
 
         GameObject new_building = new GameObject("tower building");
-        CreateMesh(new_building, vertices, triangles, uv, colour);
+        new_building.transform.position = plot.plot_centre;
+
+        Block block = new Block(lb,rt, window_size);
+        GameObject building_block = new GameObject("block");
+        building_block.AddComponent<MeshCollider>();
+
+
+        CreateMesh(building_block, block.GetVertices(), block.GetTriangles(), block.GetUV(), colour);
 
         new_building.transform.parent = plot.city_transform;
-        new_building.transform.position = plot.plot_centre;
+        building_block.transform.parent = new_building.transform;
+        building_block.transform.localPosition = new Vector3(0, 0, 0);
+        new_building.transform.localPosition += new Vector3(-plot.plot_dimensions.x / 2, 0, -plot.plot_dimensions.y / 2);
+
+        for (int i = 1; i < 3; i++)
+        {
+            lb = new Vector3(lb.x + (1 * i), last_height, lb.z + (1 * i));
+            rt = new Vector3(rt.x - (1 * i), last_height + (difference / i), rt.z - (1 * i));
+            block = new Block(lb, rt, window_size);
+
+            AddVertices(block.GetVertices(), block.GetTriangles(), block.GetUV());
+            last_height += (difference / i);
+
+            building_block = new GameObject("block");
+            building_block.AddComponent<MeshCollider>();
+
+            CreateMesh(building_block, block.GetVertices(), block.GetTriangles(), block.GetUV(), colour);
+
+            building_block.transform.parent = new_building.transform;
+            building_block.transform.localPosition = new Vector3(0, 0, 0);
+        }
+
+
+        // CreateMesh(new_building, vertices, triangles, uv, colour);
+
+
+        //new_building.transform.localPosition = plot.plot_centre ;
     }
 
     void RoundBuilding(BuildingPlot plot, float height)
@@ -143,9 +169,24 @@ public class BuildingGenerator
 
         Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
 
+        GameObject base_ = new GameObject("base");
+        Vector3 lb = new Vector3(0, 0, 0);
+        Vector3 rt = new Vector3(plot.plot_dimensions.x, 0.05f, plot.plot_dimensions.y);
+
+        vertices = new Vector3[24];
+        triangles = new int[36];
+        uv = new Vector2[24];
+
+        Block block = new Block(lb, rt, window_size);
+        AddVertices(block.GetVertices(), block.GetTriangles(), block.GetUV());
+        CreateMesh(base_, vertices, triangles, uv, colour);
+
+
+
+
         int slices = 36;//amount of slices that make up the cylinder
-        int slices_skipped = Random.Range(0, 11);   //the amount of slices that will be skippped
-        int index_skipped = Random.Range(0, slices / 2 - slices_skipped);   //the itteration at whichthey will be skipped
+        int slices_skipped = Random.Range(0, 12);   //the amount of slices that will be skippped
+        int index_skipped = Random.Range(3, slices / 2 - slices_skipped - 3);   //the itteration at whichthey will be skipped
 
         vertices = new Vector3[(slices + 1 - slices_skipped * 2) * 4 + 50];
         triangles = new int[(slices - slices_skipped * 2) * 12 + 72];
@@ -161,12 +202,23 @@ public class BuildingGenerator
 
         new_building.transform.parent = plot.city_transform;
         new_building.transform.position = plot.plot_centre;
+
+        //create the base
+
+        
+        base_.transform.parent = new_building.transform;
+        base_.transform.localPosition = new Vector3(0, 0, 0);
+        base_.transform.localPosition += new Vector3(-plot.plot_dimensions.x / 2, 0, - plot.plot_dimensions.y/2);
+
+
     }
 
     void ModernBuilding(BuildingPlot plot, float maximum_height)
     {
 
         Color colour = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1);
+
+   
 
         //init variables 
         float minHeight;
@@ -255,6 +307,7 @@ public class BuildingGenerator
 
         new_building.transform.parent = plot.city_transform;
         new_building.transform.localPosition = plot.plot_centre - new Vector3(plot.plot_dimensions.x/2, 0, plot.plot_dimensions.y/ 2);
+        
 
     }
 

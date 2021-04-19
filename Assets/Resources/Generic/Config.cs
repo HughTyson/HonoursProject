@@ -64,9 +64,11 @@ public class BuildingPlotValues
     [Tooltip("The maximum height a building can be")]
     public float maximum_height = 50;
 
-    [Tooltip("Minumum Building Dimension")]
+    [Tooltip("Minumum Building Dimension - if less then area is a plaza")]
     public float minimum_building_dimension = 25;
 
+    [Tooltip("likelihood of a RoundBuilding")]
+    public int likelihood = 100;
 
 }
 

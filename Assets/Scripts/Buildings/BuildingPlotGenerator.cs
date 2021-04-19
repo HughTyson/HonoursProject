@@ -27,9 +27,13 @@ public class BuildingPlotGenerator : MonoBehaviour
                     float min_z = plot.vertexes[0].z;
                     float max_z = plot.vertexes[plot.vertexes.Count - 1].z;
 
-                    bp.InitPlot(new Vector3((min_x + max_x) / 2, 0.1f, (min_z + max_z) / 2), new Vector2(max_x - (min_x + max_x) / 2, max_z - (min_z + max_z) / 2) * 2, Youngs_BuildingType.BLOCKYBUILDING, GM_.Instance.config.city_transform.transform, plot.type == CityBlockType.BUILDING ? false : true);
+                    bp.InitPlot(new Vector3((min_x + max_x) / 2, 0.1f, (min_z + max_z) / 2),
+                            new Vector2(max_x - (min_x + max_x) / 2, max_z - (min_z + max_z) / 2) * 2,
+                            SetType(Random.Range(0, GM_.Instance.config.building_plot_values.likelihood)),
+                            GM_.Instance.config.city_transform.transform,
+                            plot.type == CityBlockType.BUILDING ? false : true);
+
                     plots.Add(bp);
-                
 
             }
         }
@@ -40,6 +44,31 @@ public class BuildingPlotGenerator : MonoBehaviour
     public List<BuildingPlot> GetPlots()
     {
         return building_plots;
+    }
+
+    Youngs_BuildingType SetType(int value)
+    {
+
+       
+
+        if(value % GM_.Instance.config.building_plot_values.likelihood == 0)  //number is divisible by 5
+        {
+            return Youngs_BuildingType.ROUNDBUILDING;
+        }
+
+
+        if (value % 2 == 0) //number is even
+        {
+            return Youngs_BuildingType.BLOCKYBUILDING;
+        }
+        else
+        {
+            return Youngs_BuildingType.TOWERBUILDING;
+        }
+
+
+        return Youngs_BuildingType.BLOCKYBUILDING;
+
     }
 
 

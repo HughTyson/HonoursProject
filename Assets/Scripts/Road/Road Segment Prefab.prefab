@@ -47,9 +47,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7077e5d2627b1334f894e50f44af59ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dfs:
+    visited: 0
+    angle: 0
+    orientation: 0
   parent: {fileID: 0}
   direction: {x: 0, y: 0, z: 0}
   connected_points_all: []
+  connected_child_nodes: []
   connected_segments_endpoints: []
   connected_segments_midpoints: []
   connected_segments_intersection: []

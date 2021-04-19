@@ -15,7 +15,7 @@ public class CityBlock
     List<Vector2> mesh_points;
     public List<Vector3> corner_positions = new List<Vector3>();
 
-    List<int> numbers;
+
     List<GameObject> encompassing_roads;
     
     float min_x = 0;
@@ -24,17 +24,10 @@ public class CityBlock
     float min_z = 0;
     float max_z = 0;
 
-    Vector3 centre_point;
-    public GameObject centre_object;
-    public GameObject obj;
+    public Vector3 centre_point;
+
+
     public CityBlockType city_block_type;
-
-    public void AddRoadNumbers(List<int> incoming_numbers)
-    {
-        numbers = incoming_numbers;
-
-        numbers.Sort();
-    }
 
     public void AddEncompassingRoads(List<GameObject> objects)
     {
@@ -75,11 +68,7 @@ public class CityBlock
 
         foreach (Vector3 p in points)
         {
-            GameObject point = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            point.transform.position = new Vector3(p.x,0,p.y);
             corner_positions.Add(new Vector3(p.x, 0, p.y));
-            point.transform.SetParent(centre_object.transform);
-            
         }
 
         mesh_points = points.ToList();
@@ -94,10 +83,10 @@ public class CityBlock
     void CreatMesh()
     {
 
-        obj = new GameObject("CityObject");
-        obj.transform.SetParent(centre_object.transform);
-        
-        mesh_points = mesh_points.OrderBy(x => Mathf.Atan2(x.x - centre_object.transform.position.x, x.y- centre_object.transform.position.z)).ToList();
+        if (mesh_points.Count == 4)
+        {
+            mesh_points = mesh_points.OrderBy(x => Mathf.Atan2(x.x - centre_point.x, x.y - centre_point.z)).ToList();
+        }
 
         Triangulator tr = new Triangulator(mesh_points.ToArray());
         int[] indicies = tr.Triangulate();
@@ -116,7 +105,7 @@ public class CityBlock
 
         DefinePolygonOrder(m);
         
-        centre_object.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        
         
     }
 
@@ -151,6 +140,7 @@ public class CityBlock
         // Create edge lookup (Key is first vertex, Value is second vertex, of each edge)
         lookup = new Dictionary<int, int>();
         reverse_lookup = new Dictionary<int, int>();
+
         foreach (KeyValuePair<int, int> edge in edges.Values)
         {
             if (lookup.ContainsKey(edge.Key) == false)
@@ -173,22 +163,11 @@ public class CityBlock
         return true;
     }
 
-    public List<int> GetRoadNumbers()
-    {
-        return numbers;
-    }
-
     public void CalcBlocksCentre()
     {
         SetMinMax();
 
         centre_point = new Vector3((min_x + max_x) /2 , 0.1f, (min_z + max_z) / 2);
-
-        centre_object = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        centre_object.transform.position = centre_point;
-
-        centre_object.AddComponent<CityBlockInfoDisplay>();
-        centre_object.GetComponent<CityBlockInfoDisplay>().SetInfo( encompassing_roads, numbers);
     }
 
     void SetMinMax()
@@ -241,9 +220,6 @@ public class CityBlock
 
     public void CleanObj()
     {
-        GameObject.DestroyImmediate(centre_object);
-        GameObject.DestroyImmediate(obj);
-        
     }
 
 
@@ -253,7 +229,7 @@ public class CityBlock
     public void LotCreation()
     {
         minimum_area = GM_.Instance.config.building_plot_values.minimum_area;
-       
+
         Plot initital_plot = new Plot();
         initital_plot.edges_clockwise = lookup;
         initital_plot.edges_anitclockwise = reverse_lookup;
@@ -267,7 +243,7 @@ public class CityBlock
         for (int i = 0; i < vertices.Length; i++)
         {
 
-            Vector3 dir = new Vector3(vertices[i].x - centre_object.transform.position.x, 0, vertices[i].z - centre_object.transform.position.z).normalized;
+            Vector3 dir = new Vector3(vertices[i].x - centre_point.x, 0, vertices[i].z - centre_point.z).normalized;
 
             offset.x = dir.x < 0 ? -0.5f : 0.5f;
             offset.z = dir.z < 0 ? -0.5f : 0.5f;
@@ -277,6 +253,13 @@ public class CityBlock
 
         initital_plot.vertexes = vertices.ToList();
 
+        if (lookup.Count > 4)
+        {
+            PlazaGenerator.Generate(initital_plot);
+            return;
+        }
+
+        //look through each edge and check the distance - if a edge is too small make it a 
         foreach(KeyValuePair<int, int> value in lookup)
         {
             if(Vector3.Distance(vertices[value.Key], vertices[value.Value]) < GM_.Instance.config.building_plot_values.minimum_building_dimension)
@@ -285,9 +268,6 @@ public class CityBlock
                 return;
             }
         }
-
-        
-        
 
         Queue<Plot> subdivide_queue = new Queue<Plot>();
         subdivide_queue.Enqueue(initital_plot);

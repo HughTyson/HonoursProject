@@ -6,7 +6,7 @@ public class GM_ : MonoBehaviour
 {
 
     [SerializeField] Config config;
-    [SerializeField] PerlinNoise perlin_noise;
+    [SerializeField] RandomGeneration perlin_noise;
 
     static GM_ instance_ = null;
     static bool destroyed_ = false;
@@ -37,7 +37,7 @@ public class GM_ : MonoBehaviour
     public class Members
     {
         public Config config;
-        public PerlinNoise perlin_noise;
+        public RandomGeneration procedural;
     }
 
     private void Awake()
@@ -57,7 +57,7 @@ public class GM_ : MonoBehaviour
             members = new Members();
 
             members.config = config;
-            members.perlin_noise = perlin_noise;
+            members.procedural = perlin_noise;
         }
         else
         {

@@ -9,12 +9,6 @@ public class BlockGenerator : MonoBehaviour
 
     List<CityBlock> city_blocks;
 
-    KeyValuePair<RoadSegment, RoadSegment> key;
-    List<KeyValuePair<GameObject, GameObject>> pairs;
-    List<KeyValuePair<int, int>> number_pairs;
-
-    KeyValuePair<GameObject, GameObject> final_pair;
-
     public void Generate(List<GameObject> road_segments)
     {
 
@@ -35,11 +29,13 @@ public class BlockGenerator : MonoBehaviour
             }
         }
 
+        //find each face within the graph
         FindFaces(road_segments);
+
 
         foreach (CityBlock block in city_blocks)
         {
-            block.LotCreation();
+            block.LotCreation(); //generate the lots for each building
         }
 
     }
@@ -49,10 +45,12 @@ public class BlockGenerator : MonoBehaviour
         return city_blocks;
     }
     
+    //this function is responsible for identifying all the city blocks between the road network
     private void FindFaces(List<GameObject> vertices)
     {
 
-        Dictionary<Vector3, CityBlock> blocks = new Dictionary<Vector3, CityBlock>();
+        //a dictionary to hold the city blocks
+        Dictionary<Vector3, CityBlock> blocks = new Dictionary<Vector3, CityBlock>();   
 
         List<GameObject> finished_verts = new List<GameObject>();
 
@@ -60,24 +58,26 @@ public class BlockGenerator : MonoBehaviour
         {
             foreach (GameObject adj in vertex.GetComponent<RoadSegment>().connected_points_all) //for each road look at their connected points
             {
-                List<GameObject> visit = new List<GameObject>();
-                List<int> visit_num = new List<int>();
+                List<GameObject> visit = new List<GameObject>();    //create a new list of visisted roads
+              
 
-                GameObject point_A = vertex;
-                GameObject point_B = adj;
+                GameObject point_A = vertex;    //the initial vertex we started from
+                GameObject point_B = adj;   //the adjecent vertex we are looking at
 
-                
-                visit.Add(point_B);
-                visit_num.Add(point_B.GetComponent<RoadSegment>().road_number);
+                //store the adjacent point
+                visit.Add(point_B); 
+               
 
                 bool found_v = false;
                 bool force_stop = false;
 
-                while (!found_v && visit.Count < 40 && !force_stop)
+                //loop as long as we hav not found the starting vertex
+                while (!found_v && !force_stop)
                 {
-
+                    //calculate vector a (the vector between point a and point b
                     Vector2 vector_a = new Vector2(point_B.transform.position.x - point_A.transform.position.x, point_B.transform.position.z - point_A.transform.position.z);
 
+                    //create the list of potential candidate direction
                     List<GameObject> candidates = new List<GameObject>();
 
                     foreach (GameObject cand in point_B.GetComponent<RoadSegment>().connected_points_all)
@@ -93,7 +93,7 @@ public class BlockGenerator : MonoBehaviour
                     {
                         GameObject temp = point_B;
                         
-                        point_B = BestFaceCandidate(point_A ,point_B, candidates, vector_a);
+                        point_B = BestFaceCandidate(point_A ,point_B, candidates, vector_a); //set next point to the best candicate
                         point_A = temp; 
                     }
                     else
@@ -106,27 +106,27 @@ public class BlockGenerator : MonoBehaviour
                     {
                         found_v = true;
                         visit.Add(point_A);
-                        visit_num.Add(point_A.GetComponent<RoadSegment>().road_number);
+                        
                     }
 
                     visit.Add(point_B);
-                    visit_num.Add(point_B.GetComponent<RoadSegment>().road_number);
+
                 }
 
                 bool ccw = IsCCW(visit);
 
+                //if has been found and is counter clockwise then create the city block ands store it - ensuring it has not been previously created
                 if(found_v && ccw)
                 {
                     
                     CityBlock block = new CityBlock();
-                    block.AddRoadNumbers(visit_num);
                     block.AddEncompassingRoads(visit);
                     block.CalcBlocksCentre();
                     block.CalcMeshPoints();
 
-                    if (!blocks.ContainsKey(block.centre_object.transform.position))
+                    if (!blocks.ContainsKey(block.centre_point))
                     {
-                        blocks[block.centre_object.transform.position] = block;
+                        blocks[block.centre_point] = block;
                     }
                     else
                     {
@@ -149,19 +149,17 @@ public class BlockGenerator : MonoBehaviour
     GameObject BestFaceCandidate(GameObject point_A, GameObject point_B, List<GameObject> candidates, Vector2 vector_a)
     {
 
-        if (candidates.Count > 1)
+        if (candidates.Count > 1)   //if there is more than 1 candidate then check for the most counter clockwise
         {
             GameObject most_counter_clockwise = GetMostCC(point_A, point_B, candidates, vector_a);
             return most_counter_clockwise;
         }
-        else if(candidates.Count == 1)
+        else if(candidates.Count == 1) //this is the only possible path we could follow - so move to it
         {
-            return candidates[0]; //this is the only possible bath we could follow - so move to it
+            return candidates[0]; 
         }
 
         return null;
-
-
     }
 
     GameObject GetMostCC(GameObject point_A, GameObject point_B, List<GameObject> candidates, Vector2 vector_a)
@@ -180,39 +178,45 @@ public class BlockGenerator : MonoBehaviour
             //calculate vector_b (point C - point B)
             Vector2 vector_b = new Vector2(candidates[i].transform.position.x - point_B.transform.position.x, candidates[i].transform.position.z - point_B.transform.position.z);
             Vector2 vector_c = new Vector2(candidates[i].transform.position.x - point_A.transform.position.x, candidates[i].transform.position.z - point_A.transform.position.z);
-            
+         
+            //get the orientation an the angle
             float orientation = Mathf.Sign(CrossVec2(vector_a, vector_c));
-
             float angle = Mathf.Acos(Vector3.Dot(vector_a, vector_b) / (vector_a.magnitude * vector_b.magnitude));
-            //float angle = Mathf.Rad2Deg * Vector2.Angle(vector_a.normalized, vector_b.normalized);
 
+
+            
             if(orientation == -1 && max_angle < angle)
             {
+                // if the angle negative and the max angle is less than the calcualted angle then this is the most counter clockwise
                 mostCC = candidates[i];
                 max_angle = angle;
             }
             else if(orientation == 0)
             {
+                //if oritnetation is 0 then this road candicate is straight ahead
                 collinear = candidates[i];
             }
             else if(orientation == 1 && min_angle > angle)
             {
+                //if orientation is 1 then this piece is clockwise
+                //if this angle is greate than the minimum angle then this piece is the most clockwise
                 leastClockwise = candidates[i];
                 min_angle = angle;
             }
         }
 
-        if(mostCC != null)
+        //choose which value to return 
+        if(mostCC != null)  
         {
-            return mostCC;
+            return mostCC;  //if there is a most counter closwise value then return it
         }
         else if(collinear != null)
         {
-            return collinear;
+            return collinear; //else if there is a collinear road segment
         }
         else
         {
-            return leastClockwise;
+            return leastClockwise; //finaly the lst choice is to return the least counterclockwise segment
         }
 
       

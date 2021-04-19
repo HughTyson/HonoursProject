@@ -82,6 +82,7 @@ public class PMRoadGen : GenericRoadGen
         //create intersections
         CreateIntersections();
 
+        //  CleanUp();
 
         return accepted_segments;
     }
@@ -197,7 +198,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+        float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -224,7 +225,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
+        float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -252,7 +253,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
+        float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -282,7 +283,7 @@ public class PMRoadGen : GenericRoadGen
 
         GameObject proposed_road = Instantiate(road_segment);
 
-        float value = GM_.Instance.perlin_noise.GetPointCutOff(segment.transform.position.x, segment.transform.position.z + (lft_rgt * min_segment_length));
+        float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x, segment.transform.position.z + (lft_rgt * min_segment_length));
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
@@ -542,6 +543,27 @@ public class PMRoadGen : GenericRoadGen
         }
 
         return false;
+    }
+
+
+    //the purpose of the clean up funtion is to a) remove any roads that only has one connection and b) to alter roads that make up a complicated block
+
+    void CleanUp()
+    {
+        for (int i = accepted_segments.Count - 1; i > -1; i--)
+        {
+            if (accepted_segments[i].GetComponent<RoadSegment>().connected_points_all.Count <= 1)
+            {
+                foreach (GameObject temp in accepted_segments[i].GetComponent<RoadSegment>().connected_points_all)
+                {
+                    temp.GetComponent<RoadSegment>().RemoveObj(accepted_segments[i]);
+                }
+
+                DestroyImmediate(accepted_segments[i]);
+
+                accepted_segments.RemoveAt(i);
+            }
+        }
     }
 }
 
