@@ -18,14 +18,9 @@ public class GenericRoadGen : MonoBehaviour
     protected float intersection_distance_step = 3;
     protected bool use_city_limits = false;
 
-    
-    protected void InitHandlers()
-    {
-        
-    }
-
     protected void InitValues()
     {
+        //set all values that will be used in the generation process from the game manager
         max_roads = GM_.Instance.config.road_values.amount_of_roads;
         max_segment_length = GM_.Instance.config.road_values.max_road_segment_length;
         min_segment_length = GM_.Instance.config.road_values.min_road_segment_length;
@@ -40,7 +35,7 @@ public class GenericRoadGen : MonoBehaviour
 
     public List<GameObject> GetRoads()
     {
-        return accepted_segments;
+        return accepted_segments; //return all accepted road segments
     }
 
 }

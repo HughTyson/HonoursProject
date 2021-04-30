@@ -15,11 +15,12 @@ public class GrapplingHook : MonoBehaviour
 
     void Awake()
     {
-        lr = GetComponent<LineRenderer>();
+        lr = GetComponent<LineRenderer>();  //line renderer
     }
 
     void Update()
     {
+        //if the left mouse button is down 
         if (Input.GetMouseButtonDown(0))
         {
             StartGrapple();
@@ -31,14 +32,17 @@ public class GrapplingHook : MonoBehaviour
 
         if (joint != null && Input.GetMouseButton(1))
         {
+            //if the joint is active and the right mouse button is down move towards the grapple point
             MoveTo();
         }
+
+        TooCloseToGround();
     }
 
     //Called after Update
     void LateUpdate()
     {
-        //CheckCut();
+       
         DrawRope();
     }
 
@@ -48,12 +52,12 @@ public class GrapplingHook : MonoBehaviour
     void StartGrapple()
     {
         RaycastHit hit;
-        if (Physics.Raycast(camera.position, camera.forward, out hit, maxDistance, whatIsGrappleable))
+        if (Physics.Raycast(camera.position, camera.forward, out hit, maxDistance, whatIsGrappleable))  //cast a ray alongthe camera's forward, over a mximum distacne, looking for only grappable objects
         {
-            grapplePoint = hit.point;
-            joint = player.gameObject.AddComponent<SpringJoint>();
-            joint.autoConfigureConnectedAnchor = false;
-            joint.connectedAnchor = grapplePoint;
+            grapplePoint = hit.point;   //if we find a hit save the point we hit
+            joint = player.gameObject.AddComponent<SpringJoint>(); //add a joint to the player
+            joint.autoConfigureConnectedAnchor = false; 
+            joint.connectedAnchor = grapplePoint;   
 
             float distanceFromPoint = Vector3.Distance(player.position, grapplePoint);
 
@@ -61,13 +65,12 @@ public class GrapplingHook : MonoBehaviour
             joint.maxDistance = distanceFromPoint * 0.8f;
             joint.minDistance = distanceFromPoint * 0.25f;
 
-            //Adjust these values to fit your game.
             joint.spring = 4.5f;
             joint.damper = 7f;
             joint.massScale = 4.5f;
 
             lr.positionCount = 2;
-            currentGrapplePosition = gunTip.position;
+            currentGrapplePosition = camera.position;
         }
     }
 
@@ -107,50 +110,36 @@ public class GrapplingHook : MonoBehaviour
     void MoveTo()
     {
         Vector3 grapple_dir = (grapplePoint - transform.position).normalized;
-        float thrust_value = 200;
-        rigidbody.AddForce(grapple_dir * thrust_value, ForceMode.Force);
+        float thrust_value = 5;
+        rigidbody.AddForce(grapple_dir * thrust_value, ForceMode.Impulse);
 
     }
 
-    void CheckCut()
+    float min_accepeted_distance = 50;
+    void TooCloseToGround()
     {
+
+        if (!joint) return; 
 
         RaycastHit hit;
 
-        if(Input.GetMouseButton(0))
+        if(Physics.Raycast(camera.position, new Vector3(0,-1,0), out hit))
         {
-             Vector3 dir = (grapplePoint - camera.position).normalized;
-
-            if (Physics.Raycast(camera.position, dir, out hit))
+            if(hit.transform.tag == "RoadSegment")
             {
-               
-
-                if (!Vector3.Equals(hit.point, grapplePoint)) //we have cast a ray and hit a new point in the way of the current point
+                float distance = Vector3.Distance(transform.position, hit.transform.position);
+                
+                if(distance < min_accepeted_distance)
                 {
-                    grapplePoint = hit.point;
-                    joint = player.gameObject.AddComponent<SpringJoint>();
-                    joint.autoConfigureConnectedAnchor = false;
-                    joint.connectedAnchor = grapplePoint;
-
-                    float distanceFromPoint = Vector3.Distance(player.position, grapplePoint);
-
-                    //The distance grapple will try to keep from grapple point. 
-                    joint.maxDistance = distanceFromPoint * 0.8f;
-                    joint.minDistance = distanceFromPoint * 0.25f;
-
-                    //Adjust these values to fit your game.
-                    joint.spring = 4.5f;
-                    joint.damper = 7f;
-                    joint.massScale = 4.5f;
-
-                    lr.positionCount = 2;
-                    currentGrapplePosition = gunTip.position;
+                    joint.maxDistance = joint.maxDistance * 0.3f;
+                    joint.minDistance = joint.minDistance * 0.25f;
+                    Debug.Log("HELLO");
                 }
+
+                
             }
         }
-       
 
     }
-
 
 }

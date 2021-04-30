@@ -154,16 +154,5 @@ public class RoadSegment : MonoBehaviour
         road_number = i;
     }
 
-    public void Update()
-    {
-
-        
-
-        //foreach(GameObject obj in connected_points_all)
-        //{
-        //    Debug.DrawLine(transform.position, obj.transform.position, Color.red);
-        //}
-
-    }
 
 }

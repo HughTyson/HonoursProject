@@ -78,6 +78,12 @@ public class FirstPersonRigidBody : MonoBehaviour
     /// </summary>
     private void MyInput()
     {
+
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            ResetPlayer();
+        }
+
         x = Input.GetAxisRaw("Horizontal");
         y = Input.GetAxisRaw("Vertical");
         jumping = Input.GetButton("Jump");
@@ -301,5 +307,15 @@ public class FirstPersonRigidBody : MonoBehaviour
     private void StopGrounded()
     {
         grounded = false;
+    }
+
+    private void ResetPlayer()
+    {
+        transform.position = new Vector3(0, 200, 0);
+        rb.velocity = new Vector3(0, 0, 0);
+
+        x = 0;
+        y = 0;
+        jumping = false;
     }
 }

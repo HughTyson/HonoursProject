@@ -15,18 +15,8 @@ public class Config : MonoBehaviour
 
     public RoadValues road_values;
     public BuildingPlotValues building_plot_values;
+    public RandomPeaks random_peaks_values;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
 
 [System.Serializable]
@@ -55,6 +45,8 @@ public class RoadValues
 [System.Serializable]
 public class BuildingPlotValues
 {
+    [Tooltip("Will the building height be based on perlin noise or circular noise")]
+    public bool use_perlin_noise = false;
 
     [Tooltip("Minimum Area a Plot can be")]
     public float minimum_area = 5;
@@ -71,6 +63,23 @@ public class BuildingPlotValues
     public int likelihood = 100;
 
 }
+[System.Serializable]
+public class RandomPeaks
+{
 
+    [Tooltip("If using circular noise - are the peaks set by a user or are they randomly generetaed")]
+    public bool randomly_generate_peaks = false;
+
+    [Tooltip("Range of Peaks. X - Minimum. Y - Maximum")]
+    public Vector2 peaks_amount = new Vector2(2,7);
+
+    [Tooltip("Peaks Centre Position Range. X - Minimum. Y - Maximum")]
+    public Vector2 peaks_CP__range = new Vector2(1500, 1500);
+
+    [Tooltip("Range of Radius. X - Minimum. Y - Maximum")]
+    public Vector2 radius_size_range = new Vector2(700, 2000);
+
+
+}
 
 

@@ -5,9 +5,8 @@ using UnityEngine;
 public class GenerationManager : MonoBehaviour
 {
 
-    int seed;
 
-    int old_seed;
+    
     //private Vars
 
     GameObject city;
@@ -25,8 +24,13 @@ public class GenerationManager : MonoBehaviour
         //seed can be changed in the editor
         Random.InitState(GM_.Instance.config.seed);
 
+        if (GM_.Instance.config.random_peaks_values.randomly_generate_peaks)
+        {
+            GM_.Instance.procedural.RandomlyCreatePeaks();
+        }
+        Random.InitState(GM_.Instance.config.seed);
+
         GenerateCity();
-        
     }
 
     void GenerateCity()
@@ -46,8 +50,11 @@ public class GenerationManager : MonoBehaviour
         building_generator.Generate(plots);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
 }

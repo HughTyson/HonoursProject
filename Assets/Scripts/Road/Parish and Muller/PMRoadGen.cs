@@ -17,7 +17,7 @@ public class PMRoadGen : GenericRoadGen
     {
 
         InitValues();   //setup vlaues used in road generation
-        InitHandlers(); //initilise managers used in road generation
+    
 
         //define lists used to store new segments and accepted segments
         accepted_segments = new List<GameObject>();
@@ -81,8 +81,6 @@ public class PMRoadGen : GenericRoadGen
 
         //create intersections
         CreateIntersections();
-
-        //  CleanUp();
 
         return accepted_segments;
     }
@@ -150,8 +148,6 @@ public class PMRoadGen : GenericRoadGen
                     case 90:
                         {
                             CreateFwdBckZAxis(1, segment);
-                            
-
                             CreateLftRgtXAxis(1, segment);
                             CreateFwdBckZAxis(-1, segment);
                             CreateLftRgtXAxis(-1, segment);
@@ -160,8 +156,6 @@ public class PMRoadGen : GenericRoadGen
                     case 180:
                         {
                             CreateFwdBckXAxis(1, segment);
-                            
-
                             CreateLftRgtZAxis(1, segment);
                             CreateFwdBckXAxis(-1, segment);
                             CreateLftRgtZAxis(-1, segment);
@@ -170,8 +164,6 @@ public class PMRoadGen : GenericRoadGen
                     case 270:
                         {
                             CreateFwdBckZAxis(1, segment);
-                            
-
                             CreateLftRgtXAxis(1, segment);
                             CreateFwdBckZAxis(-1, segment);
                             CreateLftRgtXAxis(-1, segment);
@@ -201,7 +193,7 @@ public class PMRoadGen : GenericRoadGen
         float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
-
+        
         pos = segment.transform.position;
         pos.x += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
         scale = segment.transform.localScale;
@@ -228,8 +220,7 @@ public class PMRoadGen : GenericRoadGen
         float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x + (fwd_bck * min_segment_length), segment.transform.position.z);
 
         float random_length_forward = min_segment_length + ((max_segment_length - min_segment_length) * value);
-
-
+        
         pos = segment.transform.position;
         pos.z += fwd_bck * ((segment.transform.localScale.x / 2) + (random_length_forward / 2));
         scale = segment.transform.localScale;
@@ -256,6 +247,7 @@ public class PMRoadGen : GenericRoadGen
         float value = GM_.Instance.procedural.GetPointCutOff(segment.transform.position.x , segment.transform.position.z + (lft_rgt * min_segment_length));
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
+        
 
         pos = segment.transform.position;
         pos.z += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
@@ -287,6 +279,7 @@ public class PMRoadGen : GenericRoadGen
 
         float random_length_up = min_segment_length + ((max_segment_length - min_segment_length) * value);
 
+        
         pos = segment.transform.position;
         pos.x += lft_rgt * (random_length_up / 2) + (lft_rgt * segment_width / 2);
 
@@ -312,6 +305,10 @@ public class PMRoadGen : GenericRoadGen
 
         foreach (GameObject obj in accepted_segments)
         {
+            if(obj.GetComponent<RoadSegment>().road_number == 30)
+            {
+                Debug.Log("Hello");
+            }
 
             float rot = Mathf.Abs(obj.transform.rotation.eulerAngles.y);
 
@@ -339,11 +336,15 @@ public class PMRoadGen : GenericRoadGen
                 Ray ray = new Ray(obj.transform.position, dir);
                 float distance = 1;
 
+                bool moved = false ;
+
                 while (distance < max_intersection_distance)
                 {
                     if (Physics.Raycast(ray, out hit, RayDistance(obj.transform.localScale, distance), layer_mask))
                     {
 
+                       Debug.Log( hit.collider.gameObject.GetComponent<RoadSegment>().road_number);
+                        Debug.Log(obj.GetComponent<RoadSegment>().parent.GetComponent<RoadSegment>().road_number);
                         if (hit.collider.gameObject == obj) //if I have hit myslef
                         {
                             break;
@@ -360,27 +361,31 @@ public class PMRoadGen : GenericRoadGen
                             break;
                         }
 
-                        if (RotationEquals((int)hit.collider.gameObject.transform.rotation.eulerAngles.y,(int) obj.transform.rotation.eulerAngles.y))
+                        //if the rotation is equal
+                        if (RotationEquals((int)hit.collider.gameObject.transform.rotation.eulerAngles.y, (int)obj.transform.rotation.eulerAngles.y))
                         {
                             break;
                         }
 
-                        //if(RoadTooClose(obj.GetComponent<RoadSegment>(), hit.collider.gameObject))
-                        //{
-                        //    break;
-                        //}
+                        //if we are still here then the road will have its scale increase and moved
 
-                        
                         obj.transform.localScale += new Vector3(CalcDistance(obj.transform, hit.collider.gameObject.transform, x_or_z, dir), 0, 0);
                         obj.transform.position += (dir * (CalcDistance(obj.transform, hit.collider.gameObject.transform, x_or_z, dir)));
 
+                        //the connections are then stored 
                         obj.GetComponent<RoadSegment>().AddConnectedSegmentEndPoint(hit.collider.gameObject);
                         hit.collider.gameObject.GetComponent<RoadSegment>().AddConnectedIntersection(obj);
-
+                        moved = true;
                         break;
                     }
 
+                    //if we have not hit then we should increase road intersection
                     distance += intersection_distance_step;
+                }
+
+                if(moved)
+                {
+                    break;
                 }
 
             }
@@ -410,9 +415,8 @@ public class PMRoadGen : GenericRoadGen
             stationary_init_pos = stationary_segment.position.z + ((direction.z * -1) * (stationary_segment.localScale.z / 2));
         }
 
-        return_value = CalcDistance(moving_init_pos, stationary_init_pos);
-
-
+        return_value = CalcDistance(stationary_init_pos, moving_init_pos);
+        
         return return_value;
     }
 
@@ -426,6 +430,7 @@ public class PMRoadGen : GenericRoadGen
         return Mathf.Approximately(Mathf.Abs(rot_a), Mathf.Abs(rot_b)) || Mathf.Approximately(Mathf.Abs(rot_a + 180), Mathf.Abs(rot_b)) || Mathf.Approximately(Mathf.Abs(rot_a - 180), Mathf.Abs(rot_b));
     }
 
+   
     Vector3[] GetDirection(int rot)
     {
         Vector3[] dir = new Vector3[] { new Vector3(0, 0, 0) };
@@ -502,16 +507,16 @@ public class PMRoadGen : GenericRoadGen
 
     bool RoadTooClose(RoadSegment working_segment, GameObject accepeted_segment)
     {
-        if (RotationEquals((int)accepeted_segment.transform.rotation.eulerAngles.y, (int)working_segment.transform.rotation.eulerAngles.y))
+        if (RotationEquals((int)accepeted_segment.transform.rotation.eulerAngles.y, (int)working_segment.transform.rotation.eulerAngles.y)) //if the roads are rotated in the same direction
         {
-            if (Vector3.Distance(accepeted_segment.transform.position, working_segment.transform.position) < min_segment_length)
+            if (Vector3.Distance(accepeted_segment.transform.position, working_segment.transform.position) < min_segment_length) //roads are too close if the distance between them is less than the minimum length of a road segment
             {
                 return true;
             }
 
-            directions = GetDirection((int)working_segment.transform.rotation.eulerAngles.y);
+            directions = GetDirection((int)working_segment.transform.rotation.eulerAngles.y); //get the directions to check for roads being too close
 
-            foreach (Vector3 dir in directions)
+            foreach (Vector3 dir in directions) //loop though each direction
             {
                 Vector3 offset_working_seg = new Vector3(0, 0, 0);
 
@@ -546,24 +551,5 @@ public class PMRoadGen : GenericRoadGen
     }
 
 
-    //the purpose of the clean up funtion is to a) remove any roads that only has one connection and b) to alter roads that make up a complicated block
-
-    void CleanUp()
-    {
-        for (int i = accepted_segments.Count - 1; i > -1; i--)
-        {
-            if (accepted_segments[i].GetComponent<RoadSegment>().connected_points_all.Count <= 1)
-            {
-                foreach (GameObject temp in accepted_segments[i].GetComponent<RoadSegment>().connected_points_all)
-                {
-                    temp.GetComponent<RoadSegment>().RemoveObj(accepted_segments[i]);
-                }
-
-                DestroyImmediate(accepted_segments[i]);
-
-                accepted_segments.RemoveAt(i);
-            }
-        }
-    }
 }
 

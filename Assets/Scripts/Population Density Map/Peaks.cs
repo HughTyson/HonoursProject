@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[System.Serializable]
 public class Peaks
 {
     public Vector2 centre_position = new Vector2(0, 0);

@@ -130,7 +130,6 @@ public class BlockGenerator : MonoBehaviour
                     }
                     else
                     {
-                        block.CleanObj();
                         block = null;
                        
                     }

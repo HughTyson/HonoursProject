@@ -4,5 +4,17 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/City Scenes/FirstScene.unity
+    guid: e96abc18483764e49bf1fc4e1b063665
+  - enabled: 1
+    path: Assets/Scenes/City Scenes/Perlin City.unity
+    guid: 66f980f77bec4924f80058425b8afb86
+  - enabled: 1
+    path: Assets/Scenes/City Scenes/Defined Peaks City.unity
+    guid: 619d7d50cd8a64748a0bcd29550ebc0b
+  - enabled: 1
+    path: Assets/Scenes/City Scenes/Procedural Peaks City.unity
+    guid: cd70d116ca1913645bdecc897ce80dae
   m_configObjects: {}
